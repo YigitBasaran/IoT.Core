@@ -1,0 +1,75 @@
+{
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/clients",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "client-service",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/clients",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/devices",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "device-service",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/devices",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/transactions",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "data-transaction-service",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/transactions",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
+    }
+  ],
+  "SwaggerEndpoints": [
+    {
+      "Key": "client-service",
+      "Config": [
+        {
+          "Name": "Client Service API",
+          "Version": "v1",
+          "Url": "http://client-service/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "device-service",
+      "Config": [
+        {
+          "Name": "Device Service API",
+          "Version": "v1",
+          "Url": "http://device-service/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "data-transaction-service",
+      "Config": [
+        {
+          "Name": "Data Transaction Service API",
+          "Version": "v1",
+          "Url": "http://data-transaction-service/swagger/v1/swagger.json"
+        }
+      ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5000"
+  }
+}
