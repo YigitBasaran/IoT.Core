@@ -3,23 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Core.Gateway", "IoT.Core.Gateway\IoT.Core.Gateway.csproj", "{16B2D669-F383-4FA7-A183-FB35C784C6ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Core.Gateway", "IoT.Core.Gateway\IoT.Core.Gateway.csproj", "{16B2D669-F383-4FA7-A183-FB35C784C6ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Core.DeviceService", "IoT.Core.DeviceService\IoT.Core.DeviceService.csproj", "{98B4F16A-CDBD-354F-4E74-52B0F062B735}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Core.DeviceService", "IoT.Core.DeviceService\IoT.Core.DeviceService.csproj", "{98B4F16A-CDBD-354F-4E74-52B0F062B735}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Core.ClientService", "IoT.Core.ClientService\IoT.Core.ClientService.csproj", "{7FD67E17-FB47-465A-81C8-9F851A4EEBB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Core.ClientService", "IoT.Core.ClientService\IoT.Core.ClientService.csproj", "{7FD67E17-FB47-465A-81C8-9F851A4EEBB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Core.CommonInfrastructure", "IoT.Core.CommonInfrastructure\IoT.Core.CommonInfrastructure.csproj", "{2CD02A35-87EC-4992-8355-A7BD0D1EED18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Core.CommonInfrastructure", "IoT.Core.CommonInfrastructure\IoT.Core.CommonInfrastructure.csproj", "{2CD02A35-87EC-4992-8355-A7BD0D1EED18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Core.DataService", "IoT.Core.DataService\IoT.Core.DataService.csproj", "{176DF88B-5AB8-42E4-B4EA-2BEE1A305123}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Core.DataService", "IoT.Core.DataService\IoT.Core.DataService.csproj", "{176DF88B-5AB8-42E4-B4EA-2BEE1A305123}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Core.MockGroundService", "IoT.Core.MockGroundService\IoT.Core.MockGroundService.csproj", "{20D6E48F-323D-4E31-A249-24AF9AA697DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Core.MockGroundService", "IoT.Core.MockGroundService\IoT.Core.MockGroundService.csproj", "{20D6E48F-323D-4E31-A249-24AF9AA697DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoT.Core.AuthService", "IoT.Core.AuthService\IoT.Core.AuthService.csproj", "{0D9E101F-D740-4F0D-AA77-797D24369B36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoT.Core.AuthService", "IoT.Core.AuthService\IoT.Core.AuthService.csproj", "{0D9E101F-D740-4F0D-AA77-797D24369B36}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StartupConf", "StartupConf", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
-		docker_items.txt = docker_items.txt
+		setup_items.txt = setup_items.txt
 	EndProjectSection
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "clientapp", "clientapp\clientapp.esproj", "{24581855-81DC-CBC5-2066-6239B39AC343}"
