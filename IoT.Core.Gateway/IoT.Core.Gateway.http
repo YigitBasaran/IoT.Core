@@ -1,6 +1,0 @@
-@IoT.Core.Gateway_HostAddress = http://localhost:5205
-
-GET {{IoT.Core.Gateway_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

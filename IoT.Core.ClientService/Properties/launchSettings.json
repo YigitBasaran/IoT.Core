@@ -3,11 +3,13 @@
     "IoT.Core.ClientService": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5098",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ServiceName": "client-service",
+        "ASPNETCORE_URLS": "http://localhost:5098"
       }
     }
   }

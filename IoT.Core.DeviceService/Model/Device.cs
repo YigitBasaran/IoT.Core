@@ -1,34 +1,39 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Runtime.CompilerServices;
+using IoT.Core.CommonInfrastructure.Database.Repo;
+using Microsoft.AspNetCore.Components;
 
 namespace IoT.Core.DeviceService.Model;
 
-public class Device
+public class Device : BaseEntity<string>
 {
-    public Guid Id { get; set; }
-    public string DevEUI { get; set; }
     public string Name { get; set; }
-    public int CustomerId { get; set; }
+    public int ClientId { get; set; }
     public Location Location { get; set; }
 
-    public Device(Guid id, string devEui, string name, int customerId, Location location)
+    public Device(string devEui, string name, int clientId, Location location)
     {
-        this.Id = id;
-        this.DevEUI = devEui;
+        this.Id = devEui;
         this.Name = name;
-        this.CustomerId = customerId;
+        this.ClientId = clientId;
         this.Location = location;
     }
 
-    public static Device OnCreate(string devEui, string name, int customerId, Location location)
+    public static Device OnCreate(string devEui, string name, int clientId, Location location)
     {
-        return new Device(Guid.NewGuid(), devEui, name, customerId, location);
+        var device = new Device(devEui, name, clientId, location);
+        device.CreatedAt = DateTime.UtcNow;
+        return device;
     }
 
-    public bool isDirty(Device updatedDevice)
+    public void OnUpdateName(string newName)
     {
-        return !this.DevEUI.Equals(updatedDevice.DevEUI) || 
-               !this.Name.Equals(updatedDevice.Name) || 
-               !this.CustomerId.Equals(updatedDevice.CustomerId) ||
-               !this.Location.isEqual(updatedDevice.Location);
+        this.Name = newName;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void OnUpdateLocation(Location newLocation)
+    {
+        this.Location = newLocation;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 }

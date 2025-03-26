@@ -1,75 +1,35 @@
-﻿
-using IoT.Core.DeviceService.Configuration;
+﻿using IoT.Core.DeviceService.Configuration;
 using IoT.Core.DeviceService.Model;
-using IoT.Core.DeviceService.Model.Exceptions;
-using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-
+using IoT.Core.CommonInfrastructure.Database.Repo.Implementations;
+using IoT.Core.CommonInfrastructure.Extensions.DbSettings;
+using IoT.Core.DeviceService.Configuration;
 namespace IoT.Core.DeviceService.Repo;
-public class DeviceRepo : IDeviceRepo
+
+public class DeviceRepo : BaseMongoRepository<Device, string>, IDeviceRepo
+
 {
-    private readonly IMongoCollection<Model.Device> _devices;
-
     public DeviceRepo(IMongoClient mongoClient, DbSettings dbSettings)
+        : base(mongoClient, dbSettings.DatabaseName, dbSettings.CollectionName)
     {
-        var database = mongoClient.GetDatabase(dbSettings.DatabaseName);
-        _devices = database.GetCollection<Model.Device>(dbSettings.CollectionName);
-    }
-    public async Task CreateDeviceAsync(Model.Device device)
-    {
-        await CheckDevEuiDuplication(device);
-        await CheckDeviceNameDuplication(device);
-        await _devices.InsertOneAsync(device);
     }
 
-    public async Task DeleteDeviceAsync(Guid id)
+    public async Task<List<Device>> FindDevicesByClientIdAsync(int clientId)
     {
-        await _devices.DeleteOneAsync(device => device.Id == id);
+        return (await FindAsync(device => device.ClientId == clientId)).ToList();
     }
 
-    public async Task<List<Model.Device>> GetDevicesByCustomerId(int customerId)
+    public async Task<bool> IsThereAnyEntityWithSameDevEuiAsync(string devEui)
     {
-        return await _devices.Find(device => device.CustomerId == customerId).ToListAsync();
+        return (await FindAsync(device => (device.Id == devEui))).ToList().Count != 0;
     }
 
-    public async Task<Model.Device> GetDeviceByIdAsync(Guid id)
+    public async Task<bool> IsThereAnyEntityWithSameNameForSameClientAsync(int clientId, string devEui, string name)
     {
-        return await _devices.Find(device => device.Id == id).FirstOrDefaultAsync();
-
-    }
-
-    public async Task<List<Model.Device>> GetDevicesAsync()
-    {
-        return await _devices.Find(device => true).ToListAsync();
-    }
-
-    public async Task UpdateDeviceAsync(Model.Device device)
-    {
-        await CheckDevEuiDuplication(device);
-        await CheckDeviceNameDuplication(device);
-        await _devices.ReplaceOneAsync(d => d.Id == device.Id, device);
-    }
-
-    private async Task CheckDeviceNameDuplication(Model.Device device)
-    {
-        var filter = Builders<Model.Device>.Filter.Eq(d => d.Name, device.Name);
-        var count = await _devices.CountDocumentsAsync(filter);
-
-        if (count > 0)
-        {
-            throw new DeviceNameDuplicationException(device.Name);
-        }
-    }
-
-    private async Task CheckDevEuiDuplication(Model.Device device)
-    {
-        var filter = Builders<Model.Device>.Filter.Eq(d => d.DevEUI, device.DevEUI);
-        var count = await _devices.CountDocumentsAsync(filter);
-
-        if (count > 0)
-        {
-            throw new DevEuiDuplicationException(device.DevEUI);
-        }
+        return (await FindAsync(device =>
+                device.ClientId == clientId && 
+                device.Name == name &&        
+                device.Id != devEui           
+        )).ToList().Count != 0;
     }
 }
-

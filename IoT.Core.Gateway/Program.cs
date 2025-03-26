@@ -1,36 +1,63 @@
-using Microsoft.OpenApi.Models;
+ï»¿using Microsoft.OpenApi.Models;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Provider.Consul;
+using Consul;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Ocelot konfigürasyon dosyasýný ekle
-builder.Configuration.AddJsonFile("ocelot.json");
+// Load Ocelot configuration
+builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
-// Ocelot servislerini ekle
-builder.Services.AddOcelot();
+// Register Ocelot & Consul services
+builder.Services.AddOcelot().AddConsul();
+builder.Services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient(config =>
+{
+    var address = builder.Configuration["ConsulConfig:Host"];
+    config.Address = new Uri(address ?? "http://localhost:8500");
+}));
 
-// Swagger servisini ekle
+// Register Swagger for API Gateway
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API Gateway", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "IoT API Gateway",
+        Version = "v1",
+        Description = "API Gateway for IoT Microservices"
+    });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:53550")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 
 var app = builder.Build();
 
-// Swagger middleware'ini ekle
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+// Enable Swagger UI
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "API Gateway v1");
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/device/swagger/v1/swagger.json", "Device Service API");
+        c.SwaggerEndpoint("/client/swagger/v1/swagger.json", "Client Service API");
+        c.SwaggerEndpoint("/data/swagger/v1/swagger.json", "Data Service API");
+        c.SwaggerEndpoint("/auth/swagger/v1/swagger.json", "Auth Service API");
+    });
 
-    // Mikroservislerin Swagger dokümantasyonunu ekle
-    c.SwaggerEndpoint("/clients/swagger/v1/swagger.json", "Client Service API");
-    c.SwaggerEndpoint("/devices/swagger/v1/swagger.json", "Device Service API");
-    c.SwaggerEndpoint("/transactions/swagger/v1/swagger.json", "Data Transaction Service API");
-});
+}
+app.UseCors("AllowFrontend");
 
-// Ocelot middleware'ini ekle
-app.UseOcelot().Wait();
+// Use Ocelot Middleware
+await app.UseOcelot();
 
 app.Run();

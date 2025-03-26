@@ -1,74 +1,104 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/api/clients",
+      "DownstreamPathTemplate": "/api/device/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "client-service",
-          "Port": 80
+          "Host": "localhost",
+          "Port": 5097
         }
       ],
-      "UpstreamPathTemplate": "/clients",
+      "UpstreamPathTemplate": "/api/device/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
-      "DownstreamPathTemplate": "/api/devices",
+      "DownstreamPathTemplate": "/api/client/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "device-service",
-          "Port": 80
+          "Host": "localhost",
+          "Port": 5098
         }
       ],
-      "UpstreamPathTemplate": "/devices",
+      "UpstreamPathTemplate": "/api/client/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
-      "DownstreamPathTemplate": "/api/transactions",
+      "DownstreamPathTemplate": "/api/data/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "data-transaction-service",
-          "Port": 80
+          "Host": "localhost",
+          "Port": 5099
         }
       ],
-      "UpstreamPathTemplate": "/transactions",
-      "UpstreamHttpMethod": [ "GET", "POST" ]
-    }
-  ],
-  "SwaggerEndpoints": [
-    {
-      "Key": "client-service",
-      "Config": [
-        {
-          "Name": "Client Service API",
-          "Version": "v1",
-          "Url": "http://client-service/swagger/v1/swagger.json"
-        }
-      ]
+      "UpstreamPathTemplate": "/api/data/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
-      "Key": "device-service",
-      "Config": [
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
         {
-          "Name": "Device Service API",
-          "Version": "v1",
-          "Url": "http://device-service/swagger/v1/swagger.json"
+          "Host": "localhost",
+          "Port": 5101
         }
-      ]
+      ],
+      "UpstreamPathTemplate": "/api/auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+    },
+    // Routes for Swagger
+    {
+      "DownstreamPathTemplate": "/swagger/v1/swagger.json",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5097
+        }
+      ],
+      "UpstreamPathTemplate": "/device/swagger/v1/swagger.json",
+      "UpstreamHttpMethod": [ "GET" ]
     },
     {
-      "Key": "data-transaction-service",
-      "Config": [
+      "DownstreamPathTemplate": "/swagger/v1/swagger.json",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
         {
-          "Name": "Data Transaction Service API",
-          "Version": "v1",
-          "Url": "http://data-transaction-service/swagger/v1/swagger.json"
+          "Host": "localhost",
+          "Port": 5098
         }
-      ]
+      ],
+      "UpstreamPathTemplate": "/client/swagger/v1/swagger.json",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/swagger/v1/swagger.json",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5099
+        }
+      ],
+      "UpstreamPathTemplate": "/data/swagger/v1/swagger.json",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/swagger/v1/swagger.json",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5101
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/swagger/v1/swagger.json",
+      "UpstreamHttpMethod": [ "GET" ]
     }
   ],
+
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5000"
   }

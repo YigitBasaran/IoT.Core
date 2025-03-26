@@ -5,9 +5,11 @@ namespace IoT.Core.DeviceService.Service;
 public interface IDeviceService
 {
     Task<List<Model.Device>> GetDevicesAsync();
-    Task<Model.Device> GetDeviceByIdAsync(Guid id);
+    Task<Model.Device> GetDeviceByIdAsync(string devEui);
     Task<Model.Device> CreateDeviceAsync(AddDeviceRequestDto request);
-    Task UpdateDeviceAsync(UpdateDeviceRequestDto request);
-    Task DeleteDeviceAsync(Guid id);
-    Task<List<Model.Device>> GetDevicesByCustomerId(int customerId);
+    Task UpdateDeviceNameAsync(UpdateDeviceNameRequestDto request);
+    Task UpdateDeviceLocationAsync(UpdateDeviceLocationRequestDto request);
+    Task DeleteDeviceAsync(string devEui, string jwt);
+    Task<List<Model.Device>> GetDevicesByClientIdAsync(int clientId);
+    Task DeleteDevicesByClientId(int clientId, string jwt);
 }

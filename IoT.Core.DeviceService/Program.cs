@@ -1,61 +1,54 @@
+﻿using FluentValidation;
+using IoT.Core.CommonInfrastructure.Auth;
+using IoT.Core.CommonInfrastructure.Extensions;
+using IoT.Core.CommonInfrastructure.Extensions.DbSettings;
 using IoT.Core.DeviceService.Configuration;
+using IoT.Core.DeviceService.Controllers.Mapping;
+using IoT.Core.DeviceService.Controllers.Validators;
+using IoT.Core.DeviceService.Model;
 using IoT.Core.DeviceService.Repo;
 using IoT.Core.DeviceService.Service;
-using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using IoT.Core.DeviceService.Middlewares;
-using IoT.Core.DeviceService.Controllers.Mapping;
-using FluentValidation;
-using IoT.Core.DeviceService.Controllers.Validators;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddValidatorsFromAssemblyContaining<AddDeviceRequestValidator>();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.EnableAnnotations(); // Enables annotations from Swashbuckle
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "IoT Core Device Service API",
-        Version = "v1",
-        Description = "API for managing IoT devices."
-    });
-});
-// Bind MongoDB settings from appsettings.json
-var dbSettings = builder.Configuration.GetSection("DbSettings").Get<DbSettings>();
 
-builder.Services.AddSingleton(dbSettings);
+builder.Services.AddConsulRegistration(builder.Configuration);
 
-// Register MongoClient as scoped
-builder.Services.AddScoped<IMongoClient>(serviceProvider => new MongoClient(dbSettings.ConnectionString));
-// Ensure MongoDB uses GuidRepresentation.Standard 
-BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+builder.Services.AddJwtAuthentication(JwtSettings.Secret);
+
+builder.Services.AddSwaggerDocumentation(
+    title: "IoT Core Device Service API",
+    version: "v1",
+    description: "API for managing IoT devices."
+);
+
+builder.Services.AddMongoDatabase<Device, string, DeviceRepo>(
+    builder.Configuration
+);
+builder.Services.AddSingleton<DbSettings>(sp => DbSettings.MapFromMongoDbSettingsToDbSettings(sp.GetRequiredService<MongoDbSettings>()));
+
 builder.Services.AddScoped<IDeviceRepo, DeviceRepo>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
-builder.Services.AddAutoMapper(typeof(DeviceProfile)); // Register AutoMapper
 
+builder.Services.AddAutoMapper(typeof(DeviceProfile));
+
+builder.Services.AddSingleton<DatabaseInitializer>();
 
 var app = builder.Build();
 
-app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+await app.UseConsulAsync("device-service", builder.Configuration);
 
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "IoT Device Service API v1"); });
+    var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
+    await initializer.SeedAsync();
 }
 
-app.UseAuthorization();
+app.UseSwaggerIfDev(app.Environment, "/swagger/v1/swagger.json", "IoT Device Service API v1");
+
+app.UseGlobalMiddlewares();
 
 app.MapControllers();
 

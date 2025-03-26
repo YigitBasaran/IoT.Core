@@ -2,4 +2,4 @@
 
 namespace IoT.Core.DeviceService.Controllers.Dto;
 
-public record AddDeviceRequestDto(string DevEUI, string Name, int CustomerId, Location Location);
+public record AddDeviceRequestDto(string DevEui, string Name, int ClientId, Location Location);

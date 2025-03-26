@@ -1,8 +1,12 @@
-﻿using IoT.Core.DeviceService.Service;
+﻿using AutoMapper;
+using IoT.Core.DeviceService.Service;
 using Microsoft.AspNetCore.Mvc;
 using IoT.Core.DeviceService.Controllers.Dto;
 using FluentValidation;
 using Swashbuckle.AspNetCore.Annotations;
+using IoT.Core.DeviceService.Model;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace IoT.Core.DeviceService.Controllers;
 
@@ -14,53 +18,78 @@ public class DeviceController : ControllerBase
 {
     private readonly IDeviceService _deviceService;
     private readonly IValidator<AddDeviceRequestDto> _addValidator;
-    private readonly IValidator<UpdateDeviceRequestDto> _updateValidator;
+    private readonly IValidator<UpdateDeviceNameRequestDto> _updateNameValidator;
+    private readonly IMapper _mapper;
 
     public DeviceController(IDeviceService deviceService,
         IValidator<AddDeviceRequestDto> addValidator,
-        IValidator<UpdateDeviceRequestDto> updateValidator)
+        IValidator<UpdateDeviceNameRequestDto> updateNameValidator, IMapper mapper)
     {
         _deviceService = deviceService;
         _addValidator = addValidator;
-        _updateValidator = updateValidator;
+        _updateNameValidator = updateNameValidator;
+        _mapper = mapper;
     }
 
     [HttpGet]
+    [Authorize(Roles = "Operator")]
     [SwaggerOperation(Summary = "Retrieve all IoT devices",
         Description = "Returns a list of all registered IoT devices.")]
-    public async Task<ActionResult<IEnumerable<Model.Device>>> GetDevices()
+    public async Task<ActionResult<IEnumerable<DeviceResponseDto>>> GetDevices()
     {
         var devices = await _deviceService.GetDevicesAsync();
-        return Ok(devices);
+        var deviceDtos = _mapper.Map<List<DeviceResponseDto>>(devices);
+        return Ok(deviceDtos);
     }
 
-    [HttpGet("customer-id/{customerId}")]
-    [SwaggerOperation(Summary = "Retrieve devices by customer ID",
-        Description = "Returns all devices associated with the specified customer ID.")]
-    public async Task<ActionResult<IEnumerable<Model.Device>>> GetDevicesByCustomerId(int customerId)
+    [HttpGet("client-id/{clientId}")]
+    [Authorize(Roles = "Operator,Client")]
+    [SwaggerOperation(Summary = "Retrieve devices by client ID",
+        Description = "Returns all devices associated with the specified client ID.")]
+    public async Task<ActionResult<IEnumerable<DeviceResponseDto>>> GetDevicesByClientId(int clientId)
     {
-        var devices = await _deviceService.GetDevicesByCustomerId(customerId);
-        return Ok(devices);
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+        var clientIdClaim = User.FindFirst("clientId")?.Value;
+
+        // If Role is Client and id in path and clientId in claims are not match --> forbidden
+        if (userRole == "Client" && clientIdClaim != clientId.ToString())
+        {
+            return Forbid();
+        }
+
+        var devices = await _deviceService.GetDevicesByClientIdAsync(clientId);
+        var deviceDtos = _mapper.Map<List<DeviceResponseDto>>(devices);
+        return Ok(deviceDtos);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{devEui}")]
+    [Authorize(Roles = "Operator,Client")]
     [SwaggerOperation(Summary = "Retrieve a device by ID",
         Description = "Returns details of a specific IoT device using its unique identifier.")]
-    public async Task<ActionResult<Model.Device>> GetDevice(Guid id)
+    public async Task<ActionResult<DeviceResponseDto>> GetDevice(string devEui)
     {
-        var device = await _deviceService.GetDeviceByIdAsync(id);
+        var device = await _deviceService.GetDeviceByIdAsync(devEui);
         if (device == null)
         {
             return NotFound();
         }
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+        var clientIdClaim = User.FindFirst("clientId")?.Value;
 
-        return Ok(device);
+        // If Role is Client and id in path and clientId in claims are not match --> forbidden
+        if (userRole == "Client" && clientIdClaim != device.ClientId.ToString())
+        {
+            return Forbid();
+        }
+        var deviceDto = _mapper.Map<DeviceResponseDto>(device);
+        return Ok(deviceDto);
     }
 
     [HttpPost]
+    [Authorize(Roles = "Operator")]
     [SwaggerOperation(Summary = "Create a new IoT device",
         Description = "Registers a new IoT device in the system.")]
-    public async Task<ActionResult<Model.Device>> CreateDevice([FromBody] AddDeviceRequestDto request)
+    public async Task<ActionResult<DeviceResponseDto>> CreateDevice([FromBody] AddDeviceRequestDto request)
     {
         var validationResult = await _addValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -69,38 +98,46 @@ public class DeviceController : ControllerBase
         }
 
         var createdDevice = await _deviceService.CreateDeviceAsync(request);
-        return CreatedAtAction(nameof(GetDevice), new { id = createdDevice.Id }, createdDevice);
+        var createdDeviceDto = _mapper.Map<DeviceResponseDto>(createdDevice);
+        return CreatedAtAction(nameof(GetDevice), new { devEui = createdDeviceDto.DevEui }, createdDeviceDto);
     }
 
-    [HttpPut]
-    [SwaggerOperation(Summary = "Update an existing device",
-        Description = "Updates details of an existing IoT device.")]
-    public async Task<IActionResult> UpdateDevice([FromBody] UpdateDeviceRequestDto request)
+    [HttpPut("name")]
+    [Authorize(Roles = "Operator")]
+    [SwaggerOperation(Summary = "Update name of an existing device",
+        Description = "Updates name of an existing IoT device.")]
+    public async Task<IActionResult> UpdateDeviceName([FromBody] UpdateDeviceNameRequestDto nameRequest)
     {
-        var validationResult = await _updateValidator.ValidateAsync(request);
+        var validationResult = await _updateNameValidator.ValidateAsync(nameRequest);
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var existingDevice = await _deviceService.GetDeviceByIdAsync(request.Id);
-        if (existingDevice == null)
-        {
-            return NotFound();
-        }
-
-        await _deviceService.UpdateDeviceAsync(request);
+        await _deviceService.UpdateDeviceNameAsync(nameRequest);
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpPut("location")]
+    [Authorize(Roles = "Operator")]
+    [SwaggerOperation(Summary = "Update location of an existing device",
+        Description = "Updates location of an existing IoT device.")]
+    public async Task<IActionResult> UpdateDeviceLocation([FromBody] UpdateDeviceLocationRequestDto locationRequest)
+    {
+        await _deviceService.UpdateDeviceLocationAsync(locationRequest);
+        return NoContent();
+    }
+
+    [HttpDelete("{devEui}")]
+    [Authorize(Roles = "Operator")]
     [SwaggerOperation(Summary = "Delete an IoT device",
         Description = "Removes an IoT device from the system using its unique identifier.")]
-    public async Task<IActionResult> DeleteDevice(Guid id)
+    public async Task<IActionResult> DeleteDevice(string devEui)
     {
         try
         {
-            await _deviceService.DeleteDeviceAsync(id);
+            var jwt = HttpContext.Request.Headers["Authorization"].ToString()["Bearer ".Length..].Trim();
+            await _deviceService.DeleteDeviceAsync(devEui, jwt);
             return NoContent();
         }
         catch (Exception ex)
@@ -108,4 +145,22 @@ public class DeviceController : ControllerBase
             return NotFound(ex.Message);
         }
     }
+    [HttpDelete("delete/client-id/{clientId}")]
+    [Authorize(Roles = "Operator")]
+    [SwaggerOperation(Summary = "Delete an IoT device",
+        Description = "Removes an IoT device from the system using its unique identifier.")]
+    public async Task<IActionResult> DeleteDevicesByClientId(int clientId)
+    {
+        try
+        {
+            var jwt = HttpContext.Request.Headers["Authorization"].ToString()["Bearer ".Length..].Trim();
+            await _deviceService.DeleteDevicesByClientId(clientId, jwt);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+    
 }

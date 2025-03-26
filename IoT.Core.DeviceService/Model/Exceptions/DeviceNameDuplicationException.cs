@@ -1,5 +1,4 @@
-﻿using IoT.Core.DeviceService.Shared;
-using IoT.Core.DeviceService.Shared.Exception;
+﻿using IoT.Core.CommonInfrastructure.Exception;
 
 namespace IoT.Core.DeviceService.Model.Exceptions
 {

@@ -1,16 +1,20 @@
 ﻿using AutoMapper;
 using IoT.Core.DeviceService.Controllers.Dto;
+using IoT.Core.DeviceService.Model;
 
-namespace IoT.Core.DeviceService.Controllers.Mapping;
-
-public class DeviceProfile : Profile
+namespace IoT.Core.DeviceService.Controllers.Mapping
 {
-    public DeviceProfile()
+    public class DeviceProfile : Profile
     {
-        CreateMap<AddDeviceRequestDto, Model.Device>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore());
-
-        CreateMap<UpdateDeviceRequestDto, Model.Device>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore());
+        public DeviceProfile()
+        {
+            CreateMap<Device, DeviceResponseDto>()
+                .ConvertUsing(src => new DeviceResponseDto(
+                    src.Id,
+                    src.Name,
+                    src.ClientId,
+                    new Location(src.Location.Country, src.Location.Province, src.Location.District)
+                ));
+        }
     }
 }

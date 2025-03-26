@@ -1,0 +1,16 @@
+﻿{
+  "profiles": {
+    "IoT.Core.DataService": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5099",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ServiceName": "data-service",
+        "ASPNETCORE_URLS": "http://localhost:5099"
+      }
+    }
+  }
+}

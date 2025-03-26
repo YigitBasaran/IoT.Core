@@ -4,9 +4,9 @@
     {
         public bool isEqual(Location location)
         {
-            return !this.Country.Equals(location.Country) ||
-                   !this.Province.Equals(location.Province) ||
-                   !this.District.Equals(location.District);
+            return this.Country.Equals(location.Country) &&
+                   this.Province.Equals(location.Province) &&
+                   this.District.Equals(location.District);
         }
     }
 }
