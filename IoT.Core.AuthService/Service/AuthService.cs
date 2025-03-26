@@ -49,8 +49,15 @@ namespace IoT.Core.AuthService.Service
             var user = (await _userRepo.FindAsync(user => user.Username == username)).FirstOrDefault();
             if (user == null) throw new PasswordUpdateInvalidException();
 
-            if (string.IsNullOrEmpty(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(oldPassword, user.PasswordHash))
+            if (string.IsNullOrEmpty(newPassword))
                 throw new PasswordUpdateInvalidException();
+
+            if (string.IsNullOrEmpty(user.PasswordHash))
+                throw new PasswordUpdateInvalidException();
+
+            if(!BCrypt.Net.BCrypt.Verify(oldPassword, user.PasswordHash))
+                throw new PasswordUpdateInvalidException();
+
             user.OnUpdatePassword(newPassword);
 
             await _userRepo.UpdateAsync(user);

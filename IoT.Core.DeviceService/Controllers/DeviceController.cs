@@ -85,6 +85,20 @@ public class DeviceController : ControllerBase
         return Ok(deviceDto);
     }
 
+    [HttpGet("by-service/{devEui}")]
+    [SwaggerOperation(Summary = "Retrieve a device by ID",
+    Description = "Returns details of a specific IoT device using its unique identifier.")]
+    public async Task<ActionResult<DeviceResponseDto>> GetByService(string devEui)
+    {
+        var device = await _deviceService.GetDeviceByIdAsync(devEui);
+        if (device == null)
+        {
+            return NotFound();
+        }
+        var deviceDto = _mapper.Map<DeviceResponseDto>(device);
+        return Ok(deviceDto);
+    }
+
     [HttpPost]
     [Authorize(Roles = "Operator")]
     [SwaggerOperation(Summary = "Create a new IoT device",

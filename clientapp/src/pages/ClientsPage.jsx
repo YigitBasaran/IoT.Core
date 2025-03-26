@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
+import Navbar from './Navbar';
 
 const ClientsPage = () => {
     const [clients, setClients] = useState([]);
@@ -97,6 +98,8 @@ const ClientsPage = () => {
 
     return (
         <div style={{ padding: '2rem' }}>
+            <Navbar />
+
             <h2>Registered Clients</h2>
 
             <div style={{ marginBottom: '1rem' }}>

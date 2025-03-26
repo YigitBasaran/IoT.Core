@@ -81,7 +81,7 @@ namespace IoT.Core.DataService.Service
             {
                 try
                 {
-                    var response = await _httpClient.GetAsync($"http://localhost:5097/api/device/{devEui}");
+                    var response = await _httpClient.GetAsync($"http://localhost:5097/api/device/by-service/{devEui}");
 
                     if (!response.IsSuccessStatusCode)
                     {

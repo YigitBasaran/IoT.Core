@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 
 const DashboardPage = () => {
     const [clientCount, setClientCount] = useState(0);
@@ -42,6 +43,7 @@ const DashboardPage = () => {
 
     return (
         <div style={{ padding: '2rem' }}>
+            <Navbar/>
             <h2>Welcome to Plan-S Dashboard</h2>
 
             <div style={{ marginBottom: '2rem' }}>
@@ -50,9 +52,10 @@ const DashboardPage = () => {
             </div>
 
             <div style={{ marginBottom: '2rem' }}>
-                <button onClick={() => navigate('/clients')}>Manage Clients</button>
-                <button onClick={() => navigate('/devices')} style={{ marginLeft: '10px' }}>Manage Devices</button>
+                <button onClick={() => navigate('/clients')}>Clients</button>
+                <button onClick={() => navigate('/devices')} style={{ marginLeft: '10px' }}>Devices</button>
                 <button onClick={() => navigate('/data')} style={{ marginLeft: '10px' }}>Query IoT Data</button>
+                <button onClick={() => navigate('/auth')} style={{ marginLeft: '10px' }}>User Settings</button>
             </div>
 
             <div>
