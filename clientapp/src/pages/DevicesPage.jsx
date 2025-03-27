@@ -7,7 +7,6 @@ const DevicesPage = () => {
     const [loading, setLoading] = useState(true);
     const [editingDevice, setEditingDevice] = useState(null);
 
-    // Add device form state
     const [name, setName] = useState('');
     const [devEui, setDevEui] = useState('');
     const [clientId, setClientId] = useState('');
@@ -15,7 +14,6 @@ const DevicesPage = () => {
     const [province, setProvince] = useState('');
     const [district, setDistrict] = useState('');
 
-    // Edit forms state
     const [editName, setEditName] = useState('');
     const [editCountry, setEditCountry] = useState('');
     const [editProvince, setEditProvince] = useState('');
@@ -59,24 +57,18 @@ const DevicesPage = () => {
                     name,
                     devEui,
                     clientId: parseInt(clientId),
-                    location: {
-                        country,
-                        province,
-                        district
-                    }
+                    location: { country, province, district }
                 })
             });
 
             if (!res.ok) throw new Error('Device creation failed');
 
-            // Reset form
             setName('');
             setDevEui('');
             setClientId('');
             setCountry('');
             setProvince('');
             setDistrict('');
-
             fetchDevices();
         } catch (err) {
             console.error('Add device error:', err);
@@ -118,11 +110,7 @@ const DevicesPage = () => {
                 },
                 body: JSON.stringify({
                     devEui: editingDevice.devEui,
-                    location: {  // Note the nested location object
-                        country: editCountry,
-                        province: editProvince,
-                        district: editDistrict
-                    }
+                    location: { country: editCountry, province: editProvince, district: editDistrict }
                 })
             });
 
@@ -142,7 +130,6 @@ const DevicesPage = () => {
 
     const deleteDevice = async (devEui) => {
         if (!window.confirm(`Delete device ${devEui}?`)) return;
-
         try {
             await fetch(`http://localhost:5000/api/device/${devEui}`, {
                 method: 'DELETE',
@@ -166,133 +153,123 @@ const DevicesPage = () => {
         return acc;
     }, {});
 
+    const inputStyle = {
+        backgroundColor: '#2c2c2c',
+        color: '#fff',
+        border: '1px solid #555',
+        padding: '8px',
+        borderRadius: '4px'
+    };
+
     return (
-        <div style={{ padding: '2rem' }}>
+        <div style={{ padding: '2rem', backgroundColor: '#121212', minHeight: '100vh', color: '#fff' }}>
             <Navbar />
             <h2>IoT Devices</h2>
 
-            {/* Add Device Form */}
-            <div style={{ marginBottom: '2rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '4px' }}>
+            <div style={{
+                marginBottom: '2rem',
+                padding: '1rem',
+                border: '1px solid #444',
+                borderRadius: '4px',
+                backgroundColor: '#1e1e1e'
+            }}>
                 <h3>Add New Device</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-                    <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-                    <input placeholder="DevEUI" value={devEui} onChange={(e) => setDevEui(e.target.value)} />
-                    <select value={clientId} onChange={(e) => setClientId(e.target.value)}>
+                    <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+                    <input placeholder="DevEUI" value={devEui} onChange={(e) => setDevEui(e.target.value)} style={inputStyle} />
+                    <select value={clientId} onChange={(e) => setClientId(e.target.value)} style={inputStyle}>
                         <option value="">Select Client</option>
                         {clients.map((client) => (
                             <option key={client.id} value={client.id}>{client.name}</option>
                         ))}
                     </select>
-                    <input placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} />
-                    <input placeholder="Province" value={province} onChange={(e) => setProvince(e.target.value)} />
-                    <input placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} />
-                    <button onClick={addDevice} style={{ padding: '8px 16px', backgroundColor: '#4CAF50', color: 'white', border: 'none' }}>
+                    <input placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} style={inputStyle} />
+                    <input placeholder="Province" value={province} onChange={(e) => setProvince(e.target.value)} style={inputStyle} />
+                    <input placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} style={inputStyle} />
+                    <button onClick={addDevice} style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px'
+                    }}>
                         Add Device
                     </button>
                 </div>
             </div>
 
-            {/* Edit Modal */}
             {editingDevice && (
                 <div style={{
                     position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.7)',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     zIndex: 1000
                 }}>
                     <div style={{
-                        backgroundColor: 'white',
+                        backgroundColor: '#1e1e1e',
                         padding: '2rem',
                         borderRadius: '8px',
-                        width: '500px'
+                        width: '500px',
+                        color: '#fff'
                     }}>
                         <h3>Edit Device: {editingDevice.devEui}</h3>
 
                         <div style={{ marginBottom: '1rem' }}>
                             <h4>Update Name</h4>
-                            <input
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                style={{ width: '100%', padding: '8px' }}
-                            />
-                            <button
-                                onClick={updateDeviceName}
-                                style={{
-                                    marginTop: '8px',
-                                    padding: '8px 16px',
-                                    backgroundColor: '#2196F3',
-                                    color: 'white',
-                                    border: 'none'
-                                }}
-                            >
+                            <input value={editName} onChange={(e) => setEditName(e.target.value)} style={{ ...inputStyle, width: '100%' }} />
+                            <button onClick={updateDeviceName} style={{
+                                marginTop: '8px',
+                                padding: '8px 16px',
+                                backgroundColor: '#2196F3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px'
+                            }}>
                                 Update Name
                             </button>
                         </div>
 
                         <div style={{ marginBottom: '1rem' }}>
                             <h4>Update Location</h4>
-                            <input
-                                placeholder="Country"
-                                value={editCountry}
-                                onChange={(e) => setEditCountry(e.target.value)}
-                                style={{ width: '100%', padding: '8px', marginBottom: '8px' }}
-                            />
-                            <input
-                                placeholder="Province"
-                                value={editProvince}
-                                onChange={(e) => setEditProvince(e.target.value)}
-                                style={{ width: '100%', padding: '8px', marginBottom: '8px' }}
-                            />
-                            <input
-                                placeholder="District"
-                                value={editDistrict}
-                                onChange={(e) => setEditDistrict(e.target.value)}
-                                style={{ width: '100%', padding: '8px', marginBottom: '8px' }}
-                            />
-                            <button
-                                onClick={updateDeviceLocation}
-                                style={{
-                                    padding: '8px 16px',
-                                    backgroundColor: '#2196F3',
-                                    color: 'white',
-                                    border: 'none'
-                                }}
-                            >
+                            <input placeholder="Country" value={editCountry} onChange={(e) => setEditCountry(e.target.value)} style={{ ...inputStyle, width: '100%', marginBottom: '8px' }} />
+                            <input placeholder="Province" value={editProvince} onChange={(e) => setEditProvince(e.target.value)} style={{ ...inputStyle, width: '100%', marginBottom: '8px' }} />
+                            <input placeholder="District" value={editDistrict} onChange={(e) => setEditDistrict(e.target.value)} style={{ ...inputStyle, width: '100%', marginBottom: '8px' }} />
+                            <button onClick={updateDeviceLocation} style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#2196F3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px'
+                            }}>
                                 Update Location
                             </button>
                         </div>
 
-                        <button
-                            onClick={() => setEditingDevice(null)}
-                            style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#f44336',
-                                color: 'white',
-                                border: 'none'
-                            }}
-                        >
+                        <button onClick={() => setEditingDevice(null)} style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#f44336',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px'
+                        }}>
                             Cancel
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Devices List */}
             {loading ? (
                 <p>Loading devices...</p>
             ) : (
                 Object.keys(groupedDevices).map((clientName) => (
                     <div key={clientName} style={{ marginBottom: '2rem' }}>
                         <h3>Client: {clientName}</h3>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#1e1e1e', color: '#ccc' }}>
                             <thead>
-                                <tr style={{ backgroundColor: '#f2f2f2' }}>
+                                <tr style={{ backgroundColor: '#333' }}>
                                     <th style={{ padding: '12px', textAlign: 'left' }}>DevEUI</th>
                                     <th style={{ padding: '12px', textAlign: 'left' }}>Name</th>
                                     <th style={{ padding: '12px', textAlign: 'left' }}>Location</th>
@@ -301,40 +278,36 @@ const DevicesPage = () => {
                             </thead>
                             <tbody>
                                 {groupedDevices[clientName].map((device) => (
-                                    <tr key={device.devEui} style={{ borderBottom: '1px solid #ddd' }}>
+                                    <tr key={device.devEui} style={{ borderBottom: '1px solid #444' }}>
                                         <td style={{ padding: '12px' }}>{device.devEui}</td>
                                         <td style={{ padding: '12px' }}>{device.name}</td>
                                         <td style={{ padding: '12px' }}>
                                             {device.location?.country}, {device.location?.province}, {device.location?.district}
                                         </td>
                                         <td style={{ padding: '12px' }}>
-                                            <button
-                                                onClick={() => {
-                                                    setEditingDevice(device);
-                                                    setEditName(device.name);
-                                                    setEditCountry(device.location?.country || '');
-                                                    setEditProvince(device.location?.province || '');
-                                                    setEditDistrict(device.location?.district || '');
-                                                }}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    backgroundColor: '#2196F3',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    marginRight: '8px'
-                                                }}
-                                            >
+                                            <button onClick={() => {
+                                                setEditingDevice(device);
+                                                setEditName(device.name);
+                                                setEditCountry(device.location?.country || '');
+                                                setEditProvince(device.location?.province || '');
+                                                setEditDistrict(device.location?.district || '');
+                                            }} style={{
+                                                padding: '6px 12px',
+                                                backgroundColor: '#2196F3',
+                                                color: 'white',
+                                                border: 'none',
+                                                marginRight: '8px',
+                                                borderRadius: '4px'
+                                            }}>
                                                 Edit
                                             </button>
-                                            <button
-                                                onClick={() => deleteDevice(device.devEui)}
-                                                style={{
-                                                    padding: '6px 12px',
-                                                    backgroundColor: '#f44336',
-                                                    color: 'white',
-                                                    border: 'none'
-                                                }}
-                                            >
+                                            <button onClick={() => deleteDevice(device.devEui)} style={{
+                                                padding: '6px 12px',
+                                                backgroundColor: '#f44336',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px'
+                                            }}>
                                                 Delete
                                             </button>
                                         </td>

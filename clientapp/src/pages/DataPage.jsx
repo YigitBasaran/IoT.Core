@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 
 const DataPage = () => {
@@ -28,11 +28,8 @@ const DataPage = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 })
             ]);
-
-            const clientData = await clientRes.json();
-            const deviceData = await deviceRes.json();
-            setClients(clientData);
-            setDevices(deviceData);
+            setClients(await clientRes.json());
+            setDevices(await deviceRes.json());
         } catch (err) {
             console.error('Failed to fetch dropdown options:', err);
         }
@@ -51,20 +48,16 @@ const DataPage = () => {
         dataList.forEach((item) => {
             const parsedDate = parseDate(item.createdAt);
             if (isNaN(parsedDate)) return;
-
             const dateKey = parsedDate.toISOString().split('T')[0];
-
             if (!grouped[item.devEui]) {
                 grouped[item.devEui] = {
                     deviceInfo: currentFilteredDevices.find(d => d.devEui === item.devEui) || {},
                     dataByDate: {}
                 };
             }
-
             if (!grouped[item.devEui].dataByDate[dateKey]) {
                 grouped[item.devEui].dataByDate[dateKey] = [];
             }
-
             grouped[item.devEui].dataByDate[dateKey].push(item);
         });
         return grouped;
@@ -75,7 +68,6 @@ const DataPage = () => {
         dataList.forEach((item) => {
             const parsedDate = parseDate(item.createdAt);
             if (isNaN(parsedDate)) return;
-
             const dateKey = parsedDate.toISOString().split('T')[0];
             if (!grouped[dateKey]) grouped[dateKey] = [];
             grouped[dateKey].push(item);
@@ -86,13 +78,20 @@ const DataPage = () => {
     const handleClientChange = (clientName) => {
         setSelectedClient(clientName);
         setSelectedDevEui('');
+        setDataResults({});
+        setTotalCount(0);
         const client = clients.find((c) => c.name === clientName);
         if (client) {
-            const clientDevices = devices.filter((d) => d.clientId === client.id);
-            setFilteredDevices(clientDevices);
+            setFilteredDevices(devices.filter((d) => d.clientId === client.id));
         } else {
             setFilteredDevices([]);
         }
+    };
+
+    const handleDevEuiChange = (devEui) => {
+        setSelectedDevEui(devEui);
+        setDataResults({});
+        setTotalCount(0);
     };
 
     const handleSearch = async () => {
@@ -129,42 +128,39 @@ const DataPage = () => {
 
     const formatPayload = (payloadString) => {
         try {
-            const payload = JSON.parse(payloadString);
-            return JSON.stringify(payload, null, 2);
+            return JSON.stringify(JSON.parse(payloadString), null, 2);
         } catch {
             return payloadString;
         }
     };
 
     const renderDeviceData = (deviceData) => {
-        return Object.entries(deviceData.dataByDate).map(([date, entries]) => (
-            <div key={date} style={{ 
+        return Object.entries(deviceData.dataByDate || {}).map(([date, entries]) => (
+            <div key={date} style={{
                 marginBottom: '1rem',
                 padding: '1rem',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '4px'
+                backgroundColor: '#2c2c2c',
+                borderRadius: '4px',
+                color: '#eee'
             }}>
                 <h5>{date} ({entries.length} records)</h5>
                 <ul style={{ listStyle: 'none', padding: 0 }}>
                     {entries.map((entry, idx) => (
-                        <li key={idx} style={{ 
+                        <li key={idx} style={{
                             marginBottom: '0.5rem',
                             padding: '0.5rem',
-                            backgroundColor: '#fff',
+                            backgroundColor: '#1e1e1e',
                             borderRadius: '4px'
                         }}>
-                            <div style={{ marginBottom: '0.5rem' }}>
-                                <strong>Time: </strong>
-                                {parseDate(entry.createdAt).toLocaleTimeString()}
-                            </div>
+                            <div><strong>Time:</strong> {parseDate(entry.createdAt).toLocaleTimeString()}</div>
                             <details>
-                                <summary style={{ cursor: 'pointer' }}>View Payload</summary>
-                                <pre style={{ 
-                                    backgroundColor: '#f0f0f0',
+                                <summary style={{ cursor: 'pointer', color: '#aaf' }}>View Payload</summary>
+                                <pre style={{
+                                    backgroundColor: '#111',
                                     padding: '0.5rem',
                                     borderRadius: '4px',
                                     overflowX: 'auto',
-                                    marginTop: '0.5rem'
+                                    color: '#0f0'
                                 }}>
                                     {formatPayload(entry.payload)}
                                 </pre>
@@ -177,26 +173,28 @@ const DataPage = () => {
     };
 
     return (
-        <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-            <Navbar/>
-            <h2 style={{ marginBottom: '1.5rem', color: '#333' }}>IoT Data Query</h2>
+        <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', backgroundColor: '#121212', color: '#fff' }}>
+            <Navbar />
+            <h2 style={{ marginBottom: '1.5rem' }}>IoT Data Query</h2>
 
-            <div style={{ 
+            <div style={{
                 marginBottom: '1.5rem',
                 padding: '1rem',
-                backgroundColor: '#f9f9f9',
+                backgroundColor: '#1e1e1e',
                 borderRadius: '4px'
             }}>
                 <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Client Name:</label>
-                    <select 
-                        value={selectedClient} 
+                    <label style={{ color: '#fff', fontWeight: 'bold' }}>Client Name:</label>
+                    <select
+                        value={selectedClient}
                         onChange={(e) => handleClientChange(e.target.value)}
-                        style={{ 
+                        style={{
                             width: '100%',
                             padding: '8px',
                             borderRadius: '4px',
-                            border: '1px solid #ddd'
+                            border: '1px solid #444',
+                            backgroundColor: '#2b2b2b',
+                            color: '#fff'
                         }}
                     >
                         <option value="">-- Select Client --</option>
@@ -209,16 +207,18 @@ const DataPage = () => {
                 </div>
 
                 <div style={{ marginBottom: '1rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>DevEUI:</label>
+                    <label style={{ color: '#fff', fontWeight: 'bold' }}>DevEUI:</label>
                     <select
                         value={selectedDevEui}
-                        onChange={(e) => setSelectedDevEui(e.target.value)}
+                        onChange={(e) => handleDevEuiChange(e.target.value)}
                         disabled={!selectedClient}
-                        style={{ 
+                        style={{
                             width: '100%',
                             padding: '8px',
                             borderRadius: '4px',
-                            border: '1px solid #ddd'
+                            border: '1px solid #444',
+                            backgroundColor: '#2b2b2b',
+                            color: '#fff'
                         }}
                     >
                         <option value="">-- All Devices --</option>
@@ -232,50 +232,54 @@ const DataPage = () => {
 
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                     <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Start Date:</label>
-                        <input 
-                            type="date" 
-                            value={startDate} 
+                        <label style={{ color: '#fff', fontWeight: 'bold' }}>Start Date:</label>
+                        <input
+                            type="date"
+                            value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            style={{ 
+                            style={{
                                 width: '100%',
                                 padding: '8px',
                                 borderRadius: '4px',
-                                border: '1px solid #ddd'
+                                border: '1px solid #444',
+                                backgroundColor: '#2b2b2b',
+                                color: '#fff'
                             }}
                         />
                     </div>
                     <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>End Date:</label>
-                        <input 
-                            type="date" 
-                            value={endDate} 
+                        <label style={{ color: '#fff', fontWeight: 'bold' }}>End Date:</label>
+                        <input
+                            type="date"
+                            value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            style={{ 
+                            style={{
                                 width: '100%',
                                 padding: '8px',
                                 borderRadius: '4px',
-                                border: '1px solid #ddd'
+                                border: '1px solid #444',
+                                backgroundColor: '#2b2b2b',
+                                color: '#fff'
                             }}
                         />
                     </div>
                 </div>
 
-                <button 
+                <button
                     onClick={handleSearch}
-                    style={{ 
+                    disabled={loading}
+                    style={{
                         padding: '10px 16px',
-                        backgroundColor: '#4CAF50',
-                        color: 'white',
+                        backgroundColor: '#fff',
+                        color: '#000',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
                         fontWeight: 'bold',
                         width: '100%'
                     }}
-                    disabled={loading}
                 >
-                    {loading ? 'Searchi>ng...' : 'Search Data'}
+                    {loading ? 'Searching...' : 'Search Data'}
                 </button>
             </div>
 
@@ -286,12 +290,13 @@ const DataPage = () => {
             ) : (
                 <>
                     {totalCount > 0 && (
-                        <div style={{ 
+                        <div style={{
                             marginBottom: '1rem',
                             padding: '0.5rem',
-                            backgroundColor: '#e8f5e9',
+                            backgroundColor: '#2e7d32',
                             borderRadius: '4px',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            color: '#fff'
                         }}>
                             <strong>Total Records Found: {totalCount}</strong>
                         </div>
@@ -300,39 +305,18 @@ const DataPage = () => {
                     {Object.keys(dataResults).length > 0 && (
                         <div style={{ marginTop: '1.5rem' }}>
                             {selectedDevEui ? (
-                                // Display for single device (grouped by date)
                                 Object.entries(dataResults).map(([date, entries]) => (
-                                    <div key={date} style={{ 
-                                        marginBottom: '1.5rem',
-                                        border: '1px solid #e0e0e0',
-                                        borderRadius: '4px'
-                                    }}>
-                                        <div style={{ 
-                                            padding: '0.75rem 1rem',
-                                            backgroundColor: '#f5f5f5',
-                                            borderBottom: '1px solid #e0e0e0'
-                                        }}>
-                                            <h4 style={{ margin: 0 }}>{date} ({entries.length} records)</h4>
+                                    <div key={date} style={{ marginBottom: '1.5rem', border: '1px solid #333', borderRadius: '4px' }}>
+                                        <div style={{ padding: '0.75rem 1rem', backgroundColor: '#2c2c2c' }}>
+                                            <h4 style={{ margin: 0, color: '#eee' }}>{date} ({entries.length} records)</h4>
                                         </div>
                                         <ul style={{ listStyle: 'none', padding: 0 }}>
                                             {entries.map((entry, idx) => (
-                                                <li key={idx} style={{ 
-                                                    padding: '1rem',
-                                                    borderBottom: '1px solid #f0f0f0'
-                                                }}>
-                                                    <div style={{ marginBottom: '0.5rem' }}>
-                                                        <strong>Time: </strong>
-                                                        {parseDate(entry.createdAt).toLocaleTimeString()}
-                                                    </div>
+                                                <li key={idx} style={{ padding: '1rem', borderBottom: '1px solid #444', color: '#ccc' }}>
+                                                    <div><strong>Time:</strong> {parseDate(entry.createdAt).toLocaleTimeString()}</div>
                                                     <details>
-                                                        <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>View Payload Details</summary>
-                                                        <pre style={{ 
-                                                            backgroundColor: '#fafafa',
-                                                            padding: '1rem',
-                                                            borderRadius: '4px',
-                                                            overflowX: 'auto',
-                                                            marginTop: '0.5rem'
-                                                        }}>
+                                                        <summary style={{ cursor: 'pointer', fontWeight: 'bold', color: '#aaf' }}>View Payload</summary>
+                                                        <pre style={{ backgroundColor: '#111', padding: '1rem', borderRadius: '4px', overflowX: 'auto', color: '#0f0' }}>
                                                             {formatPayload(entry.payload)}
                                                         </pre>
                                                     </details>
@@ -342,21 +326,11 @@ const DataPage = () => {
                                     </div>
                                 ))
                             ) : (
-                                // Display for all devices (grouped by device then date)
                                 Object.entries(dataResults).map(([devEui, deviceData]) => (
-                                    <div key={devEui} style={{ 
-                                        marginBottom: '2rem',
-                                        border: '1px solid #e0e0e0',
-                                        borderRadius: '4px'
-                                    }}>
-                                        <div style={{ 
-                                            padding: '0.75rem 1rem',
-                                            backgroundColor: '#e3f2fd',
-                                            borderBottom: '1px solid #e0e0e0'
-                                        }}>
+                                    <div key={devEui} style={{ marginBottom: '2rem', border: '1px solid #333', borderRadius: '4px' }}>
+                                        <div style={{ padding: '0.75rem 1rem', backgroundColor: '#1a237e', color: '#fff' }}>
                                             <h3 style={{ margin: 0 }}>
-                                                Device: {devEui}
-                                                {deviceData.deviceInfo.name && ` (${deviceData.deviceInfo.name})`}
+                                                Device: {devEui} {deviceData.deviceInfo.name && `(${deviceData.deviceInfo.name})`}
                                             </h3>
                                         </div>
                                         <div style={{ padding: '0.5rem 1rem' }}>
