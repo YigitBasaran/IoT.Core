@@ -1,3 +1,6 @@
 # IoT.Core
+## Definition: 
+The IoT Core Software Project is a distributed system I built using .NET Core to manage IoT clients, devices, and sensor data within a scalable microservices architecture. It includes decoupled services for authentication, client and device management, data handling, and a mock station for simulating real-time sensor input. Services communicate via REST APIs and asynchronous messaging with RabbitMQ and MassTransit. A centralized API Gateway (Ocelot) manages routing and enforces JWT-based security with role and claim-based access. Each service uses its own database—PostgreSQL or MongoDB—adhering to the database-per-service pattern. I developed a shared infrastructure library for reusable components such as repositories, event bus abstractions, and global exception handling. Key functionalities include secure login and password management, full CRUD for clients and devices, time-based data queries, and event-driven bulk data ingestion. I was fully responsible for the backend implementation, architecture design, and inter-service communication strategy.
+## Usage: 
 - First please pull and run the docker images in the setup_items.txt
 - If the migrations are already in the project, you can directly use "dotnet ef update database ..." commands in setup_items.txt by skipping creating migrations.
